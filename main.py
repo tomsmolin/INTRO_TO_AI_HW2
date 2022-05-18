@@ -26,7 +26,7 @@ def run_agents():
         "random": Agent.AgentRandom(),
         "greedy": Agent.AgentGreedy(),
         # TODO: is this addition ok? for now it is placed to debug code
-        "gimproved": submission.AgentGreedyImproved(),
+        "greedy_improved": submission.AgentGreedyImproved(),
         "minimax": submission.AgentMinimax(),
         "alphabeta": submission.AgentAlphaBeta(),
         "expectimax": submission.AgentExpectimax()
@@ -34,6 +34,8 @@ def run_agents():
 
     # agent_names = sys.argv
     agent_names = [args.agent0, args.agent1]
+    ## Tom - DEBUG
+    # print(agent_names)
     env = TaxiEnv()
 
     env.generate(args.seed, 2*args.count_steps)
@@ -49,8 +51,8 @@ def run_agents():
             op = agent.run_step(env, i, args.time_limit)
             end = time.time()
             ## Comment out next two lines for DEBUGGING
-            # if end - start > args.time_limit:
-            #     raise RuntimeError("Agent used too much time!")
+            if end - start > args.time_limit:
+                raise RuntimeError("Agent used too much time!")
             env.apply_operator(i, op)
             if args.print_game:
                 print('taxi ' + str(i) + ' chose ' + op)
