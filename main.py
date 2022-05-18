@@ -25,6 +25,8 @@ def run_agents():
     agents = {
         "random": Agent.AgentRandom(),
         "greedy": Agent.AgentGreedy(),
+        # TODO: is this addition ok? for now it is placed to debug code
+        "gimproved": submission.AgentGreedyImproved(),
         "minimax": submission.AgentMinimax(),
         "alphabeta": submission.AgentAlphaBeta(),
         "expectimax": submission.AgentExpectimax()
