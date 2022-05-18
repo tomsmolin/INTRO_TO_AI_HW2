@@ -15,9 +15,9 @@ class AgentGreedyImproved(AgentGreedy):
             child.apply_operator(agent_id, op)
         children_heuristics = [self.heuristic(child, agent_id) for child in children]
         # # Tom - DEBUG
-        # print("######################")
-        # print(children_heuristics)
-        # print("######################")
+        print("######################")
+        print(children_heuristics)
+        print("######################")
         max_heuristic = max(children_heuristics)
         index_selected = children_heuristics.index(max_heuristic)
         return operators[index_selected]
@@ -36,8 +36,9 @@ class AgentGreedyImproved(AgentGreedy):
                 # picking up a passenger with 0 reward - as defined in the heuristic
                 if compensation[idx] == 0:
                     worth[idx] = -math.inf
+                    #worth[idx] = (-1) * 10000
                 else:
-                    worth[idx] = 12 + (taxi.cash - other_taxi.cash) \
+                    worth[idx] = 12 + 10*(taxi.cash - other_taxi.cash) \
                                     + (taxi.fuel - other_taxi.fuel) \
                                     - (dist_from_passengers[idx] + compensation[idx])
             max_worth = max(worth)
@@ -50,8 +51,9 @@ class AgentGreedyImproved(AgentGreedy):
             # picking up a passenger with 0 reward - as defined in the heuristic
             if compensation == 0:
                 return -math.inf
+                # return (-1) * 10000
             else:
-                return (12 + (taxi.cash - other_taxi.cash) \
+                return (12 + 10*(taxi.cash - other_taxi.cash) \
                            + (taxi.fuel - other_taxi.fuel) \
                            - manhattan_distance(taxi.position, passenger.destination))
 
