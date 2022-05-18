@@ -2,6 +2,10 @@ from Agent import Agent, AgentGreedy
 from TaxiEnv import TaxiEnv, manhattan_distance
 import random
 
+# TODO: piazza - is it ok to import these packages
+import math
+
+
 class AgentGreedyImproved(AgentGreedy):
     # TODO: section a : 3
     def run_step(self, env: TaxiEnv, agent_id, time_limit):
@@ -28,8 +32,10 @@ class AgentGreedyImproved(AgentGreedy):
             compensation = [manhattan_distance(p.position, p.destination) for p in env.passengers]
             worth = [0 for _ in range(len(env.passengers))]
             for idx in range(len(env.passengers)):
+                # The next cond. is placed to make sure the agent doesn't prioritize
+                # picking up a passenger with 0 reward - as defined in the heuristic
                 if compensation[idx] == 0:
-                    worth[idx] = (-1)*10000
+                    worth[idx] = -math.inf
                 else:
                     worth[idx] = 12 + (taxi.cash - other_taxi.cash) \
                                     + (taxi.fuel - other_taxi.fuel) \
@@ -40,8 +46,10 @@ class AgentGreedyImproved(AgentGreedy):
         else:   # There is a passenger on the taxi
             passenger = taxi.passenger
             compensation = manhattan_distance(passenger.destination, passenger.position)
+            # The next cond. is placed to make sure the agent doesn't prioritize
+            # picking up a passenger with 0 reward - as defined in the heuristic
             if compensation == 0:
-                return (-1)*1000
+                return -math.inf
             else:
                 return (12 + (taxi.cash - other_taxi.cash) \
                            + (taxi.fuel - other_taxi.fuel) \
