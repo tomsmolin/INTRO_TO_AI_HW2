@@ -52,6 +52,9 @@ def run_agents():
             end = time.time()
             ## Comment out next two lines for DEBUGGING
             if end - start > args.time_limit:
+                # TOM DEBUG
+                print(f'end - start = {end - start} ')
+                print(f'time limit = {args.time_limit}')
                 raise RuntimeError("Agent used too much time!")
             env.apply_operator(i, op)
             if args.print_game:

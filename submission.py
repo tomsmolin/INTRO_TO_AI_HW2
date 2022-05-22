@@ -22,6 +22,10 @@ class AgentGreedyImproved(AgentGreedy):
         index_selected = children_heuristics.index(max_heuristic)
         return operators[index_selected]
 
+        # Prioritize passenger pickup/drop-off
+        #index_selected = children_heuristics[::-1].index(max_heuristic)
+        # return operators[len(children_heuristics) - index_selected - 1]
+
     def heuristic(self, env: TaxiEnv, taxi_id: int):
         taxi = env.get_taxi(taxi_id)
         dist_from_passengers = [manhattan_distance(p.position, taxi.position) for p in env.passengers]
@@ -54,26 +58,30 @@ class AgentMinimax(Agent):
     # TODO: section b : 1
     def run_step(self, env: TaxiEnv, agent_id, time_limit):
         start = time.time()
-        max_depth = 1
+        max_depth = 4
 
         operators = env.get_legal_operators(agent_id)
         children = [env.clone() for _ in operators]
+        for child, op in zip(children, operators):
+            child.apply_operator(agent_id, op)
         best_op_so_far = operators[0]
         # Should think and inquire about the time limits here more
-        while (time.time() - start) > (0.01 * time_limit):
-            children_values = [self.rb_minimax(child, agent_id, True, max_depth-1) for child in children]
+        while (time.time() - start) < (0.25 * time_limit):
+            children_values = [self.rb_minimax(child, agent_id, False, max_depth-1) for child in children]
             children_max = max(children_values)
-            index_selected = children_values.index(children_max)
-            best_op_so_far = operators[index_selected]
+            # Prioritize passenger pickup/drop-off
+            index_selected = children_values[::-1].index(children_max)
+            best_op_so_far = operators[len(children_values) - index_selected - 1]
             max_depth += 1
-
+        # TOM DEBUG
+        # print(f'max depth: {max_depth}')
         return best_op_so_far
 
 
         # raise NotImplementedError()
 
     def rb_minimax(self, env, agent_id, our_turn, depth):
-        if env.done or depth == 0:
+        if env.done() or depth == 0:
             return self.heuristic(env, agent_id)
 
         # Turn <- Turn(State)
@@ -102,7 +110,7 @@ class AgentMinimax(Agent):
     def heuristic(self, env: TaxiEnv, taxi_id: int):
         taxi = env.get_taxi(taxi_id)
         other_taxi = env.get_taxi((taxi_id+1) % 2)
-        if env.done:
+        if env.done():
             return taxi.cash - other_taxi.cash
 
         dist_from_passengers = [manhattan_distance(p.position, taxi.position) for p in env.passengers]
