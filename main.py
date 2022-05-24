@@ -44,6 +44,9 @@ def run_agents():
         print('initial board:')
         env.print()
 
+
+    # Tom DEBUG
+    agents_run_time = [0, 0]
     for _ in range(args.count_steps):
         for i, agent_name in enumerate(agent_names):
             agent = agents[agent_name]
@@ -56,6 +59,9 @@ def run_agents():
                 print(f'end - start = {end - start} ')
                 print(f'time limit = {args.time_limit}')
                 raise RuntimeError("Agent used too much time!")
+            # Tom DEBUG
+            # print(f'{agent_name} time: {end - start}')
+            agents_run_time[i] += (end - start)
             env.apply_operator(i, op)
             if args.print_game:
                 print('taxi ' + str(i) + ' chose ' + op)
@@ -63,6 +69,7 @@ def run_agents():
         if env.done():
             break
     balances = env.get_balances()
+    print(f'Run times: {agents_run_time}')
     print(balances)
     if balances[0] == balances[1]:
         print('draw')
