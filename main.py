@@ -60,7 +60,7 @@ def run_agents():
                 print(f'time limit = {args.time_limit}')
                 raise RuntimeError("Agent used too much time!")
             # Tom DEBUG
-            # print(f'{agent_name} time: {end - start}')
+            # print(f'{agent_name}{i} time: {end - start}')
             agents_run_time[i] += (end - start)
             env.apply_operator(i, op)
             if args.print_game:
