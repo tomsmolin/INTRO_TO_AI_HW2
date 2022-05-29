@@ -2,12 +2,10 @@ from Agent import Agent, AgentGreedy
 from TaxiEnv import TaxiEnv, manhattan_distance
 import random
 
-# TODO: ask in piazze it's ok to import the module
 import math
 import time
 
 class AgentGreedyImproved(AgentGreedy):
-    # TODO: section a : 3
     def run_step(self, env: TaxiEnv, agent_id, time_limit):
         operators = env.get_legal_operators(agent_id)
         children = [env.clone() for _ in operators]
@@ -53,9 +51,46 @@ class AgentGreedyImproved(AgentGreedy):
             else:
                 return (12 + 12*taxi.cash - manhattan_distance(taxi.position, passenger.destination))
 
+# WAS a Method in alpha-beta and minimax Agents
+# now an outside function to avoid duplication
+# todo: remove method boddies after further testing
+def minimax_alpha_beta_heuristic(env: TaxiEnv, taxi_id: int):
+    taxi = env.get_taxi(taxi_id)
+
+    # todo: these 3 lines can be moved inside the rb_<algo> methods - inorder to allow greedy_improved
+    # todo: use the h(s) as well as an outside function
+    other_taxi = env.get_taxi((taxi_id+1) % 2)
+    if env.done():
+        return taxi.cash - other_taxi.cash
+    # todo: END OF THESE 3 LINES ABOVE
+
+    dist_from_passengers = [manhattan_distance(p.position, taxi.position) for p in env.passengers]
+
+    if taxi.passenger is None:
+        compensation = [manhattan_distance(p.position, p.destination) for p in env.passengers]
+        worth = [0 for _ in range(len(env.passengers))]
+        for idx in range(len(env.passengers)):
+            # The next cond. is placed to make sure the agent doesn't prioritize
+            # picking up a passenger with 0 reward - as defined in the heuristic
+            if compensation[idx] == 0:
+                worth[idx] = 0
+            else:
+                worth[idx] = 12 + 12*taxi.cash - (dist_from_passengers[idx] + compensation[idx])
+        max_worth = max(worth)
+        return (max_worth)
+
+    else:   # There is a passenger on the taxi
+        passenger = taxi.passenger
+        compensation = manhattan_distance(passenger.destination, passenger.position)
+        # The next cond. is placed to make sure the agent doesn't prioritize
+        # picking up a passenger with 0 reward - as defined in the heuristic
+        if compensation == 0:
+            return 0
+        else:
+            return (12 + 12*taxi.cash - manhattan_distance(taxi.position, passenger.destination))
+
 
 class AgentMinimax(Agent):
-    # TODO: section b : 1
     def run_step(self, env: TaxiEnv, agent_id, time_limit):
         start = time.time()
         max_depth = 4
@@ -79,7 +114,8 @@ class AgentMinimax(Agent):
 
     def rb_minimax(self, env, agent_id, our_turn, depth):
         if env.done() or depth == 0:
-            return self.heuristic(env, agent_id)
+            # return self.heuristic(env, agent_id)
+            return minimax_alpha_beta_heuristic(env, agent_id)
 
         # Turn <- Turn(State)
         agent_to_play = agent_id if our_turn else (agent_id+1) % 2
@@ -103,39 +139,38 @@ class AgentMinimax(Agent):
                 curr_min = min(curr_min, value)
             return curr_min
 
-    def heuristic(self, env: TaxiEnv, taxi_id: int):
-        taxi = env.get_taxi(taxi_id)
-        other_taxi = env.get_taxi((taxi_id+1) % 2)
-        if env.done():
-            return taxi.cash - other_taxi.cash
-
-        dist_from_passengers = [manhattan_distance(p.position, taxi.position) for p in env.passengers]
-
-        if taxi.passenger is None:
-            compensation = [manhattan_distance(p.position, p.destination) for p in env.passengers]
-            worth = [0 for _ in range(len(env.passengers))]
-            for idx in range(len(env.passengers)):
-                # The next cond. is placed to make sure the agent doesn't prioritize
-                # picking up a passenger with 0 reward - as defined in the heuristic
-                if compensation[idx] == 0:
-                    worth[idx] = 0
-                else:
-                    worth[idx] = 12 + 12*taxi.cash - (dist_from_passengers[idx] + compensation[idx])
-            max_worth = max(worth)
-            return (max_worth)
-
-        else:   # There is a passenger on the taxi
-            passenger = taxi.passenger
-            compensation = manhattan_distance(passenger.destination, passenger.position)
-            # The next cond. is placed to make sure the agent doesn't prioritize
-            # picking up a passenger with 0 reward - as defined in the heuristic
-            if compensation == 0:
-                return 0
-            else:
-                return (12 + 12*taxi.cash - manhattan_distance(taxi.position, passenger.destination))
+    # def heuristic(self, env: TaxiEnv, taxi_id: int):
+    #     taxi = env.get_taxi(taxi_id)
+    #     other_taxi = env.get_taxi((taxi_id+1) % 2)
+    #     if env.done():
+    #         return taxi.cash - other_taxi.cash
+    #
+    #     dist_from_passengers = [manhattan_distance(p.position, taxi.position) for p in env.passengers]
+    #
+    #     if taxi.passenger is None:
+    #         compensation = [manhattan_distance(p.position, p.destination) for p in env.passengers]
+    #         worth = [0 for _ in range(len(env.passengers))]
+    #         for idx in range(len(env.passengers)):
+    #             # The next cond. is placed to make sure the agent doesn't prioritize
+    #             # picking up a passenger with 0 reward - as defined in the heuristic
+    #             if compensation[idx] == 0:
+    #                 worth[idx] = 0
+    #             else:
+    #                 worth[idx] = 12 + 12*taxi.cash - (dist_from_passengers[idx] + compensation[idx])
+    #         max_worth = max(worth)
+    #         return (max_worth)
+    #
+    #     else:   # There is a passenger on the taxi
+    #         passenger = taxi.passenger
+    #         compensation = manhattan_distance(passenger.destination, passenger.position)
+    #         # The next cond. is placed to make sure the agent doesn't prioritize
+    #         # picking up a passenger with 0 reward - as defined in the heuristic
+    #         if compensation == 0:
+    #             return 0
+    #         else:
+    #             return (12 + 12*taxi.cash - manhattan_distance(taxi.position, passenger.destination))
 
 class AgentAlphaBeta(Agent):
-    # TODO: section c : 1
     def run_step(self, env: TaxiEnv, agent_id, time_limit):
         start = time.time()
         max_depth = 4
@@ -161,7 +196,8 @@ class AgentAlphaBeta(Agent):
 
     def rb_alpha_beta(self, env, agent_id, our_turn, depth, alpha, beta):
         if env.done() or depth == 0:
-            return self.heuristic(env, agent_id)
+            # return self.heuristic(env, agent_id)
+            return minimax_alpha_beta_heuristic(env, agent_id)
 
         # Turn <- Turn(State)
         agent_to_play = agent_id if our_turn else (agent_id+1) % 2
@@ -198,36 +234,36 @@ class AgentAlphaBeta(Agent):
 
             return curr_min
 
-    def heuristic(self, env: TaxiEnv, taxi_id: int):
-        taxi = env.get_taxi(taxi_id)
-        other_taxi = env.get_taxi((taxi_id+1) % 2)
-        if env.done():
-            return taxi.cash - other_taxi.cash
-
-        dist_from_passengers = [manhattan_distance(p.position, taxi.position) for p in env.passengers]
-
-        if taxi.passenger is None:
-            compensation = [manhattan_distance(p.position, p.destination) for p in env.passengers]
-            worth = [0 for _ in range(len(env.passengers))]
-            for idx in range(len(env.passengers)):
-                # The next cond. is placed to make sure the agent doesn't prioritize
-                # picking up a passenger with 0 reward - as defined in the heuristic
-                if compensation[idx] == 0:
-                    worth[idx] = 0
-                else:
-                    worth[idx] = 12 + 12*taxi.cash - (dist_from_passengers[idx] + compensation[idx])
-            max_worth = max(worth)
-            return (max_worth)
-
-        else:   # There is a passenger on the taxi
-            passenger = taxi.passenger
-            compensation = manhattan_distance(passenger.destination, passenger.position)
-            # The next cond. is placed to make sure the agent doesn't prioritize
-            # picking up a passenger with 0 reward - as defined in the heuristic
-            if compensation == 0:
-                return 0
-            else:
-                return (12 + 12*taxi.cash - manhattan_distance(taxi.position, passenger.destination))
+    # def heuristic(self, env: TaxiEnv, taxi_id: int):
+    #     taxi = env.get_taxi(taxi_id)
+    #     other_taxi = env.get_taxi((taxi_id+1) % 2)
+    #     if env.done():
+    #         return taxi.cash - other_taxi.cash
+    #
+    #     dist_from_passengers = [manhattan_distance(p.position, taxi.position) for p in env.passengers]
+    #
+    #     if taxi.passenger is None:
+    #         compensation = [manhattan_distance(p.position, p.destination) for p in env.passengers]
+    #         worth = [0 for _ in range(len(env.passengers))]
+    #         for idx in range(len(env.passengers)):
+    #             # The next cond. is placed to make sure the agent doesn't prioritize
+    #             # picking up a passenger with 0 reward - as defined in the heuristic
+    #             if compensation[idx] == 0:
+    #                 worth[idx] = 0
+    #             else:
+    #                 worth[idx] = 12 + 12*taxi.cash - (dist_from_passengers[idx] + compensation[idx])
+    #         max_worth = max(worth)
+    #         return (max_worth)
+    #
+    #     else:   # There is a passenger on the taxi
+    #         passenger = taxi.passenger
+    #         compensation = manhattan_distance(passenger.destination, passenger.position)
+    #         # The next cond. is placed to make sure the agent doesn't prioritize
+    #         # picking up a passenger with 0 reward - as defined in the heuristic
+    #         if compensation == 0:
+    #             return 0
+    #         else:
+    #             return (12 + 12*taxi.cash - manhattan_distance(taxi.position, passenger.destination))
 
 
 class AgentExpectimax(Agent):
