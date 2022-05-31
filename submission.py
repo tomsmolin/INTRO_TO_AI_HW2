@@ -101,7 +101,7 @@ class AgentMinimax(Agent):
             child.apply_operator(agent_id, op)
         best_op_so_far = operators[0]
         # Should think and inquire about the time limits here more
-        while (time.time() - start) < (0.25 * time_limit):
+        while (time.time() - start) < (0.22 * time_limit):
             children_values = [self.rb_minimax(child, agent_id, False, max_depth-1) for child in children]
             children_max = max(children_values)
             # Prioritize passenger pickup/drop-off
@@ -181,7 +181,7 @@ class AgentAlphaBeta(Agent):
             child.apply_operator(agent_id, op)
         best_op_so_far = operators[0]
         # Should think and inquire about the time limits here more
-        while (time.time() - start) < (0.25 * time_limit):
+        while (time.time() - start) < (0.22 * time_limit):
             children_values = [self.rb_alpha_beta(child, agent_id, False, max_depth-1, -math.inf, math.inf)
                                for child in children]
             children_max = max(children_values)

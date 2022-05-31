@@ -76,6 +76,94 @@ def run_agents():
     else:
         print('taxi', balances.index(max(balances)), 'wins!')
 
+import itertools
+def test(seed, count_steps ,agent_names):
+    agents = {
+        "random": Agent.AgentRandom(),
+        "greedy": Agent.AgentGreedy(),
+        "greedy_improved": submission.AgentGreedyImproved(),
+        "minimax": submission.AgentMinimax(),
+        "alphabeta": submission.AgentAlphaBeta(),
+        "expectimax": submission.AgentExpectimax()
+    }
+    print_game = False
+    time_limit = 0.4
+
+    env = TaxiEnv()
+    env.generate(seed, 2*count_steps)
+    if print_game:
+        print('initial board:')
+        env.print()
+
+    for _ in range(count_steps):
+        for i, agent_name in enumerate(agent_names):
+            agent = agents[agent_name]
+            start = time.time()
+            op = agent.run_step(env, i,time_limit)
+            end = time.time()
+            time_took = end - start
+            #print("unused time: " + str(time_limit - time_took))
+
+            if end - start > time_limit:
+                raise RuntimeError("Agent used too much time!")
+            env.apply_operator(i, op)
+            if print_game:
+                print('taxi ' + str(i) + ' chose ' + op)
+                env.print()
+        if env.done():
+            break
+    balances = env.get_balances()
+    print(balances)
+    if balances[0] == balances[1]:
+        return 2
+    else:
+        return balances.index(max(balances))
+    #else:
+    #    print('taxi', balances.index(max(balances)), 'wins!')
+
+def test_of_tests():
+    results = [0, 0, 0]
+    agent_names = [ "random", "greedy","greedy_improved","minimax", "alphabeta"]
+    agents_wins = {
+        "random": 0,
+        "greedy": 0,
+        "greedy_improved": 0,
+        "minimax": 0,
+        "alphabeta": 0
+    }
+    draws_against_segel = 0
+    games_won_against_segel = 0
+    games = 0
+    draws_cnt = 0
+    num_of_steps = 10
+    for i in range(0, 256):
+        for agents_playing in itertools.product(agent_names, repeat = 2 ):
+            if agents_playing[0] == agents_playing[1] or ("random" in agents_playing and "greedy" in agents_playing):
+                continue
+            if "greedy_improved" not in agents_playing:
+                continue
+            print(agents_playing)
+            #agents_playing = [agent1, agent2]
+            if "random" in agents_playing or "greedy" in agents_playing:
+                if "greedy_improved" in agents_playing:
+                    games += 1
+            result = test(i, num_of_steps, agents_playing)
+            winner = "draw"
+            if result < 2:
+                agents_wins[agents_playing[result]] += 1
+                winner = str(agents_playing[result])
+                if ("random" in agents_playing or "greedy" in agents_playing) \
+                        and (winner != "random" and winner != "greedy"):
+                    if "greedy_improved" in agents_playing:
+                        games_won_against_segel += 1
+            else:
+                if "random" or "greedy" in agents_playing:
+                    draws_against_segel += 1
+                draws_cnt+=1
+            print("seed: " + str(i) + ", players: " + str(agents_playing)+ ", winner: " + winner + ", draws: " + str(draws_cnt))
+            print(f'Winning percantage against segel is: {float(games_won_against_segel/games) * 100}%')
+            print (agents_wins)
 
 if __name__ == "__main__":
-    run_agents()
+    test_of_tests()
+    # run_agents()
