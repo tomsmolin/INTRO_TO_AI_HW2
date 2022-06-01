@@ -277,6 +277,67 @@ class AgentAlphaBeta(Agent):
 
 
 class AgentExpectimax(Agent):
-    # TODO: section d : 1
+        
     def run_step(self, env: TaxiEnv, agent_id, time_limit):
-        raise NotImplementedError()
+        start = time.time()
+        max_depth = 4
+        operators = env.get_legal_operators(agent_id)
+        children = [env.clone() for _ in operators]
+        for child, op in zip(children, operators):
+            child.apply_operator(agent_id, op)
+        best_op_so_far = operators[0]
+        # Should think and inquire about the time limits here more
+        while (time.time() - start) < (0.25 * time_limit):
+            children_values = [self.rb_expectimax(child, agent_id, False, max_depth-1, -math.inf, math.inf)
+                               for child in children]
+            children_max = max(children_values)
+            # Prioritize passenger pickup/drop-off
+            index_selected = children_values[::-1].index(children_max)
+            best_op_so_far = operators[len(children_values) - index_selected - 1]
+            max_depth += 1
+        # TOM DEBUG
+        # print(f'agent {agent_id} max depth: {max_depth}')
+        return best_op_so_far
+        # raise NotImplementedError()
+
+    # maybe add alpha? the opponent is random so beta is less of an option, but perhaps alpha?
+    def rb_expectimax(self, env, agent_id, our_turn, depth, alpha = -math.inf, beta = math.inf):
+        if env.done() or depth == 0:
+            # return self.heuristic(env, agent_id)
+            return heuristic_function(env, agent_id)
+
+        # Turn <- Turn(State)
+        agent_to_play = agent_id if our_turn else (agent_id+1) % 2
+        # Children <- Succ(State)
+        operators = env.get_legal_operators(agent_to_play)
+
+        children = [env.clone() for _ in operators]
+        for child, op in zip(children, operators):
+            child.apply_operator(agent_to_play, op)
+
+        if our_turn:
+            curr_max = -math.inf
+            for child in children:
+                value = self.rb_expectimax(child, agent_id, False, depth-1)
+                curr_max = max(curr_max, value)
+            return curr_max
+        else:
+            # treat the opponent as a random greedy player
+            #check if the special operators (pickup, dropoff, fillup are in the operators)      
+            num = 0
+            for op in operators:
+                if op == 'pick up passenger' or op == 'drop off passenger' or op == 'refuel' or op == 'park':
+                    num += 2
+                else:
+                    num += 1
+            pval = 1/num
+            values =[] 
+            total = 0
+            for child in children:
+                values.append(self.rb_expectimax(child, agent_id, True, depth-1))
+            for val, op in zip(values, operators):
+                if op == 'pick up passenger' or op == 'drop off passenger' or op == 'refuel' or op == 'park':
+                    total += (2*pval*val)
+                else:
+                    total += (1*pval*val)
+            return total
