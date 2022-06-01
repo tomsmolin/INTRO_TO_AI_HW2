@@ -87,7 +87,7 @@ def test(seed, count_steps ,agent_names):
         "expectimax": submission.AgentExpectimax()
     }
     print_game = False
-    time_limit = 0.4
+    time_limit = 0.6
 
     env = TaxiEnv()
     env.generate(seed, 2*count_steps)
@@ -123,30 +123,55 @@ def test(seed, count_steps ,agent_names):
 
 def test_of_tests():
     results = [0, 0, 0]
-    agent_names = [ "random", "greedy","greedy_improved","minimax", "alphabeta"]
+    agent_names = [ "random", "greedy","greedy_improved","minimax", "alphabeta", "expectimax"]
     agents_wins = {
         "random": 0,
         "greedy": 0,
         "greedy_improved": 0,
         "minimax": 0,
-        "alphabeta": 0
+        "alphabeta": 0,
+        "expectimax": 0
     }
-    draws_against_segel = 0
-    games_won_against_segel = 0
-    games = 0
+    agents_games_against_staff = {
+        "greedy_improved": 0,
+        "minimax": 0,
+        "alphabeta": 0,
+        "expectimax": 0
+    }
+
+    agents_wins_against_staff = {
+        "greedy_improved": 0,
+        "minimax": 0,
+        "alphabeta": 0,
+        "expectimax": 0
+    }
+    #draws_against_segel = 0
+    #games_won_against_segel = 0
+    #games = 0
     draws_cnt = 0
     num_of_steps = 10
     for i in range(0, 256):
         for agents_playing in itertools.product(agent_names, repeat = 2 ):
             if agents_playing[0] == agents_playing[1] or ("random" in agents_playing and "greedy" in agents_playing):
                 continue
-            if "greedy_improved" not in agents_playing:
-                continue
+            # if "alphabeta" not in agents_playing:
+            #     continue
+            # if "random" not in agents_playing and "greedy" not in agents_playing:
+            #     continue
+            # if "greedy_improved" not in agents_playing:
+            #     continue
             print(agents_playing)
             #agents_playing = [agent1, agent2]
             if "random" in agents_playing or "greedy" in agents_playing:
                 if "greedy_improved" in agents_playing:
-                    games += 1
+                    agents_games_against_staff["greedy_improved"] += 1
+                elif "minimax" in agents_playing:
+                    agents_games_against_staff["minimax"] += 1
+                elif "alphabeta" in agents_playing:
+                    agents_games_against_staff["alphabeta"] += 1
+                else:
+                    agents_games_against_staff["expectimax"] += 1
+
             result = test(i, num_of_steps, agents_playing)
             winner = "draw"
             if result < 2:
@@ -155,14 +180,26 @@ def test_of_tests():
                 if ("random" in agents_playing or "greedy" in agents_playing) \
                         and (winner != "random" and winner != "greedy"):
                     if "greedy_improved" in agents_playing:
-                        games_won_against_segel += 1
+                        agents_wins_against_staff["greedy_improved"] += 1
+                    elif "minimax" in agents_playing:
+                        agents_wins_against_staff["minimax"] += 1
+                    elif "alphabeta" in agents_playing:
+                        agents_wins_against_staff["alphabeta"] += 1
+                    else:
+                        agents_wins_against_staff["expectimax"] += 1
             else:
-                if "random" or "greedy" in agents_playing:
-                    draws_against_segel += 1
+                # if "random" or "greedy" in agents_playing:
+                #     draws_against_segel += 1
                 draws_cnt+=1
             print("seed: " + str(i) + ", players: " + str(agents_playing)+ ", winner: " + winner + ", draws: " + str(draws_cnt))
-            print(f'Winning percantage against segel is: {float(games_won_against_segel/games) * 100}%')
-            print (agents_wins)
+            winning_percentage = {}
+            for agent in agents_games_against_staff:
+                if agents_wins_against_staff[agent] == 0:
+                    winning_percentage[agent] = 0
+                else:
+                    winning_percentage[agent] = float(agents_wins_against_staff[agent] / agents_games_against_staff[agent]) * 100
+            print(winning_percentage)
+            print(agents_wins)
 
 if __name__ == "__main__":
     test_of_tests()
