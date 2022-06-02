@@ -154,10 +154,10 @@ def test_of_tests():
         for agents_playing in itertools.product(agent_names, repeat = 2 ):
             if agents_playing[0] == agents_playing[1] or ("random" in agents_playing and "greedy" in agents_playing):
                 continue
-            # if "alphabeta" not in agents_playing:
-            #     continue
-            # if "random" not in agents_playing and "greedy" not in agents_playing:
-            #     continue
+            if "minimax" not in agents_playing:
+                continue
+            if "random" not in agents_playing and "greedy" not in agents_playing:
+                continue
             # if "greedy_improved" not in agents_playing:
             #     continue
             print(agents_playing)
