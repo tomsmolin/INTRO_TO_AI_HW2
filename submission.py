@@ -59,7 +59,7 @@ class AgentMinimax(Agent):
         for child, op in zip(children, operators):
             child.apply_operator(agent_id, op)
         best_op_so_far = operators[0]
-        while (time.time() - start) < (0.05 * time_limit):
+        while (time.time() - start) < (0.03 * time_limit):
             children_values = [self.rb_minimax(child, agent_id, False, max_depth-1) for child in children]
             children_max = max(children_values)
             # Prioritize passenger pickup/drop-off
@@ -111,7 +111,7 @@ class AgentAlphaBeta(Agent):
         for child, op in zip(children, operators):
             child.apply_operator(agent_id, op)
         best_op_so_far = operators[0]
-        while (time.time() - start) < (0.05 * time_limit):
+        while (time.time() - start) < (0.03 * time_limit):
             children_values = [self.rb_alpha_beta(child, agent_id, False, max_depth-1, -math.inf, math.inf)
                                for child in children]
             children_max = max(children_values)
@@ -170,7 +170,7 @@ class AgentExpectimax(Agent):
         for child, op in zip(children, operators):
             child.apply_operator(agent_id, op)
         best_op_so_far = operators[0]
-        while (time.time() - start) < (0.05 * time_limit):
+        while (time.time() - start) < (0.03 * time_limit):
             children_values = [self.rb_expectimax(child, agent_id, False, max_depth-1, -math.inf, math.inf)
                                for child in children]
             children_max = max(children_values)

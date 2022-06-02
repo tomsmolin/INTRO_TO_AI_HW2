@@ -87,7 +87,7 @@ def test(seed, count_steps ,agent_names):
         "expectimax": submission.AgentExpectimax()
     }
     print_game = False
-    time_limit = 0.1
+    time_limit = 0.2
 
     env = TaxiEnv()
     env.generate(seed, 2*count_steps)
@@ -105,6 +105,7 @@ def test(seed, count_steps ,agent_names):
             #print("unused time: " + str(time_limit - time_took))
 
             if end - start > time_limit:
+                print(f'Exceeded time: {end - time_limit}')
                 raise RuntimeError("Agent used too much time!")
             env.apply_operator(i, op)
             if print_game:
@@ -154,7 +155,7 @@ def test_of_tests():
         for agents_playing in itertools.product(agent_names, repeat = 2 ):
             if agents_playing[0] == agents_playing[1] or ("random" in agents_playing and "greedy" in agents_playing):
                 continue
-            # if "minimax" not in agents_playing:
+            # if "expectimax" not in agents_playing:
             #     continue
             # if "random" not in agents_playing and "greedy" not in agents_playing:
             #     continue
