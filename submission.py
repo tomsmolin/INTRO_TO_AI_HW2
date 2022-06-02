@@ -73,7 +73,8 @@ class AgentMinimax(Agent):
             if env.done():
                 taxi = env.get_taxi(agent_id)
                 other_taxi = env.get_taxi((agent_id+1) % 2)
-                return taxi.cash - other_taxi.cash
+                result = math.inf if (taxi.cash - other_taxi.cash) > 0 else -math.inf
+                return result
 
             return heuristic_function(env, agent_id)
 
@@ -125,7 +126,8 @@ class AgentAlphaBeta(Agent):
             if env.done():
                 taxi = env.get_taxi(agent_id)
                 other_taxi = env.get_taxi((agent_id+1) % 2)
-                return taxi.cash - other_taxi.cash
+                result = math.inf if (taxi.cash - other_taxi.cash) > 0 else -math.inf
+                return result
             return heuristic_function(env, agent_id)
 
         # Turn <- Turn(State)
@@ -168,7 +170,7 @@ class AgentExpectimax(Agent):
         for child, op in zip(children, operators):
             child.apply_operator(agent_id, op)
         best_op_so_far = operators[0]
-        while (time.time() - start) < (0.07 * time_limit):
+        while (time.time() - start) < (0.05 * time_limit):
             children_values = [self.rb_expectimax(child, agent_id, False, max_depth-1, -math.inf, math.inf)
                                for child in children]
             children_max = max(children_values)
@@ -184,7 +186,8 @@ class AgentExpectimax(Agent):
             if env.done():
                 taxi = env.get_taxi(agent_id)
                 other_taxi = env.get_taxi((agent_id+1) % 2)
-                return taxi.cash - other_taxi.cash
+                result = math.inf if (taxi.cash - other_taxi.cash) > 0 else -math.inf
+                return result
 
             return heuristic_function(env, agent_id)
 

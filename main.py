@@ -87,7 +87,7 @@ def test(seed, count_steps ,agent_names):
         "expectimax": submission.AgentExpectimax()
     }
     print_game = False
-    time_limit = 0.6
+    time_limit = 0.1
 
     env = TaxiEnv()
     env.generate(seed, 2*count_steps)
@@ -149,15 +149,15 @@ def test_of_tests():
     #games_won_against_segel = 0
     #games = 0
     draws_cnt = 0
-    num_of_steps = 10
+    num_of_steps = 100
     for i in range(0, 256):
         for agents_playing in itertools.product(agent_names, repeat = 2 ):
             if agents_playing[0] == agents_playing[1] or ("random" in agents_playing and "greedy" in agents_playing):
                 continue
-            if "minimax" not in agents_playing:
-                continue
-            if "random" not in agents_playing and "greedy" not in agents_playing:
-                continue
+            # if "minimax" not in agents_playing:
+            #     continue
+            # if "random" not in agents_playing and "greedy" not in agents_playing:
+            #     continue
             # if "greedy_improved" not in agents_playing:
             #     continue
             print(agents_playing)
